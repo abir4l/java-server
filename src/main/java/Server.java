@@ -1,34 +1,32 @@
+import http.HttpRequest;
+
 import java.io.*;
+import java.lang.invoke.WrongMethodTypeException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.nio.Buffer;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Server {
 
 
-
-    private final String ROOT_DIR = "root-dir";
-    private final String HTTP_METHOD = "HTTP/1.1";
+    private final String ROOT_DIR = "<server-files>";
+    private final String HTTP_VERSION = "HTTP/1.1";
     private final String OK = "200 OK";
     private final String NOT_FOUND = "404 NOT_FOUND";
+    private final String [] HTTP_METHODS ={"GET","POST"};
+    private Map<String,String> headers = new HashMap<>();
 
     public static void main(String[] args) {
         new Server().connectionInit();
     }
 
     private final Pattern DIR = Pattern.compile("/.*\\s");
-
     private void connectionInit(){
         try {
 
             ServerSocket socket = new ServerSocket(4000);
-            System.out.println("Starting server");
             Socket connection = socket.accept();
             readRequest(connection);
 
@@ -42,8 +40,8 @@ public class Server {
 
         OutputStreamWriter osw = new OutputStreamWriter(outputStream);
         PrintWriter bw = new PrintWriter(osw);
-
         File f = new File(ROOT_DIR+file);
+
         try {
             String lines = readFile(f);
             bw.println(generateResponse(OK));
@@ -71,30 +69,12 @@ public class Server {
     }
 
     private void readRequest(Socket connection) {
-
-        List<String> data = new ArrayList<>();
-        String line;
-        String file = "";
         try{
             BufferedReader br = readFromStream(connection.getInputStream());
-            while ((line =  br.readLine() )!= null){
-                if(line.contains("GET")){
-                    System.out.println(line);
-                    Matcher m = DIR.matcher(line);
-                    if(m.find()){
-                        file = m.group(0);
-                        System.out.println(m.group(0));
-                    }
-                }
-                data.add(line);
-                if(line.isEmpty())
-                    break;
-            }
-            System.out.println(data);
-            sendRespond(connection.getOutputStream(),file.trim());
+            HttpRequest request = getHttpMethod(br.readLine());
+            request.setHeaders(parseHeaders(br));
+            sendRespond(connection.getOutputStream(),request.getRequestPath());
         }
-
-
 
         catch (Exception e){
 
@@ -103,8 +83,56 @@ public class Server {
         }
     }
 
+    private Map<String,String> parseHeaders(BufferedReader br) {
+        Map<String,String> headers = new HashMap<>();
+        try{
+            String line = "";
+            while((line = br.readLine()) != null){
+
+                if(line.isEmpty())break;
+                String headerArray[] = line.split(":");
+                headers.put(headerArray[0].trim(),headerArray[1].trim());
+            }
+        }catch (IOException ex){
+            ex.printStackTrace();
+        }
+        return headers;
+    }
+
+    private HttpRequest getHttpMethod(String line) {
+        String methodArray[]= line.split(" ");
+        HttpRequest request = new HttpRequest();
+        try{
+            request.setHttpMethod(stripMethodFromHeader(methodArray[0]));
+            request.setRequestPath(stripPathFromHeader(methodArray[1]));
+        }catch (ArrayIndexOutOfBoundsException ar){
+            throw new RuntimeException("HTTP header malformed");
+        }
+
+        return request;
+
+
+    }
+
+    private String stripPathFromHeader(String line) {
+        line = line.replaceAll("\\.\\./","");
+        Matcher matcher = DIR.matcher(line);
+        if(matcher.find()){
+            String file = matcher.group(0);
+            return file.trim();
+        }
+
+        return null;
+    }
+
+    private String stripMethodFromHeader(String method) {
+        return Arrays.stream(HTTP_METHODS)
+                .filter(s1 -> method.equalsIgnoreCase(s1))
+                .findAny().orElseThrow(WrongMethodTypeException::new);
+    }
+
     private String generateResponse(String code){
-        return String.format("%s %s\r\n", HTTP_METHOD,code);
+        return String.format("%s %s\r\n", HTTP_VERSION,code);
     }
 
     private BufferedReader readFromStream(InputStream inputStream){
@@ -114,3 +142,4 @@ public class Server {
     }
 
 }
+
