@@ -7,6 +7,17 @@
     <groupId>com.server.java</groupId>
     <artifactId>java-server</artifactId>
     <version>1.0</version>
+   <build>
+           <plugins>
+               <plugin>
+                   <artifactId>maven-compiler-plugin</artifactId>
+                   <configuration>
+                       <source>1.8</source>
+                       <target>1.8</target>
+                   </configuration>
+               </plugin>
+           </plugins>
+   </build>
 
 
 </project>
