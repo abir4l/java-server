@@ -3,6 +3,7 @@ package http;
 import java.util.Map;
 
 public class HttpRequest {
+
     private String httpMethod;
     private String requestPath;
     private Map<String,String> headers;
