@@ -24,7 +24,8 @@ public class Connection {
             try {
                 System.out.println("waiting...");
                 session = socket.accept();
-                session.setSoTimeout(5000);
+//                session.setSoTimeout(5000);
+                System.out.println(session.getInetAddress());
                 System.out.println("accpeted...");
             } catch (IOException e) {
                 e.printStackTrace();
