@@ -48,9 +48,11 @@ public class Parser {
                 request = parseRequest(connection.getInputStream());
                 if (request == null)
                 {
-//                  sendError(connection.getOutputStream());
                     return;
+//                  sendError(connection.getOutputStream());
+//                    sendRespond(connection.getOutputStream(), "Test.java");
                 }
+                else
                 sendRespond(connection.getOutputStream(), request.getRequestPath());
             } catch (SocketTimeoutException ste) {
                 System.err.println("Timed out...");
@@ -64,9 +66,9 @@ public class Parser {
     private HttpRequest parseRequest(InputStream stream) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(stream));
         String line = br.readLine();
-//        if (line == null) {
-//            return null;
-//        }
+        if (line == null) {
+            return null;
+        }
         String methodArray[] = line.split(" ");
         HttpRequest request = new HttpRequest();
         try {
