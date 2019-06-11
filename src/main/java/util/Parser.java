@@ -2,10 +2,14 @@ package util;
 
 import http.HttpRequest;
 import http.HttpSession;
+import servlet.Servlet;
 
 import java.io.*;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
+import java.net.URLDecoder;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -55,8 +59,22 @@ public class Parser {
                         sendError(connection.getOutputStream());
 //                    sendRespond(connection.getOutputStream(), "Test.java");
                 }
-                else
-                sendRespond(connection.getOutputStream(), request.getRequestPath());
+                else{
+                    try {
+                        Servlet servlet = new Servlet();
+                        Servlet.class.getMethod("processRequest",HttpRequest.class).invoke(servlet,request);
+
+                    } catch (IllegalAccessException e) {
+                        e.printStackTrace();
+                    } catch (InvocationTargetException e) {
+                        e.printStackTrace();
+                    } catch (NoSuchMethodException e) {
+                        e.printStackTrace();
+                    }
+
+
+                    sendRespond(connection.getOutputStream(), request.getRequestPath());
+                }
             } catch (SocketTimeoutException ste) {
                 System.err.println("Timed out...");
             } catch (IOException ioe) {
@@ -100,14 +118,11 @@ public class Parser {
                 br = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(buffer, splitbyte, BUFFER_SIZE - splitbyte)));
                 line = "";
                 while ((line = br.readLine()) != null) {
+                    line = URLDecoder.decode(line,"UTF-8");
                     String parameters[] = line.split("&");
                     for (String parameter : parameters) {
                         String[] param = parameter.split("=");
-                        int trim = param[1].indexOf("%20%20");
-                        if (trim > 0) {
-                            param[1] = param[1].substring(0, trim);
-                        }
-                        params.put(param[0], param[1]);
+                        params.put(param[0],param[1]);
                     }
                 }
             }
