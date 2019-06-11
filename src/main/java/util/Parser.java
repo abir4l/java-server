@@ -1,7 +1,7 @@
 package util;
 
 import http.HttpRequest;
-import jdk.internal.util.xml.impl.Input;
+import http.HttpSession;
 
 import java.io.*;
 import java.net.Socket;
@@ -16,6 +16,7 @@ public class Parser {
 
 
     private static final String BAD_REQUEST = "400 BAD_REQUEST";
+    private static final Integer BUFFER_SIZE = 8092;
     private final String HTTP_VERSION = "HTTP/1.1";
     private final String NOT_FOUND = "404 NOT_FOUND";
     private final String OK = "200 OK";
@@ -25,6 +26,7 @@ public class Parser {
 
 
     private HttpRequest request;
+    private HttpSession httpSession;
 
     private Parser() {
 
@@ -35,21 +37,22 @@ public class Parser {
         return value;
     }
 
-    public static void parse(Socket connection) {
+    public static void parse(HttpSession httpSession) {
         Parser parser = new Parser();
-        parser.readRequest(connection);
+        parser.readRequest(httpSession);
     }
 
-    private void readRequest(Socket connection) {
+    private void readRequest(HttpSession session) {
+        this.httpSession = session;
+        Socket connection = session.getConnection();
         // IO reading thread for non blocking.
-
-        new Thread(() -> {
+        Thread ioOperation = new Thread(() -> {
             try {
-                request = parseRequest(connection.getInputStream());
+                request = parseRequest(httpSession);
                 if (request == null)
                 {
-                    return;
-//                  sendError(connection.getOutputStream());
+
+                        sendError(connection.getOutputStream());
 //                    sendRespond(connection.getOutputStream(), "Test.java");
                 }
                 else
@@ -60,29 +63,102 @@ public class Parser {
                 ioe.printStackTrace();
             }
 
-        }).start();
+        });
+
+        ioOperation.start();
+
+
     }
 
-    private HttpRequest parseRequest(InputStream stream) throws IOException {
-        BufferedReader br = new BufferedReader(new InputStreamReader(stream));
-        String line = br.readLine();
-        if (line == null) {
-            return null;
-        }
-        String methodArray[] = line.split(" ");
+    private HttpRequest parseRequest(HttpSession session) throws IOException {
+        InputStream stream = session.getConnection().getInputStream();
+        byte buffer[] = new byte[BUFFER_SIZE];
+        int headerFinalIndex = findHeader(stream,buffer);
+        return parseHeader(buffer,headerFinalIndex);
+    }
+
+    private HttpRequest parseHeader(byte[] buffer,Integer splitbyte) {
+        BufferedReader br = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(buffer, 0, splitbyte)));
         HttpRequest request = new HttpRequest();
+        String line = "";
         try {
-            request.setHttpMethod(getHTTPMethod(methodArray[0]));
-            request.setRequestPath(getRequestURI(methodArray[1]));
-        } catch (ArrayIndexOutOfBoundsException ar) {
-            throw new RuntimeException("HTTP header malformed");
+            while ((line = br.readLine()) != null) {
+                String methodArray[] = line.split(" ");
+
+                try {
+                    request.setHttpMethod(getHTTPMethod(methodArray[0]));
+                    request.setRequestPath(getRequestURI(methodArray[1]));
+                } catch (ArrayIndexOutOfBoundsException ar) {
+                    throw new RuntimeException("HTTP header malformed");
+                }
+                request.setHeaders(getRequestHeaders(br));
+
+            }
+
+            Map<String, String> params = new HashMap<>();
+            if (request.getHttpMethod().equalsIgnoreCase("post")) {
+                br = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(buffer, splitbyte, BUFFER_SIZE - splitbyte)));
+                line = "";
+                while ((line = br.readLine()) != null) {
+                    String parameters[] = line.split("&");
+                    for (String parameter : parameters) {
+                        String[] param = parameter.split("=");
+                        int trim = param[1].indexOf("%20%20");
+                        if (trim > 0) {
+                            param[1] = param[1].substring(0, trim);
+                        }
+                        params.put(param[0], param[1]);
+                    }
+                }
+            }
+            request.setParams(params);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        request.setHeaders(getRequestHeaders(br));
+
         return request;
 
+    }
+
+    private Integer findHeader(InputStream stream, byte buffer[]) {
+
+        int read = 0;
+        int headerEndIndex = 0;
+        try {
+            read = stream.read(buffer, 0, BUFFER_SIZE);
+            while (headerEndIndex + 1 < read) {
+
+                if (buffer[headerEndIndex] == '\n' &&
+                        buffer[headerEndIndex + 1] == '\n') {
+                    headerEndIndex += 2;
+                    break;
+                }
+
+                if (buffer[headerEndIndex] == '\r' &&
+                        buffer[headerEndIndex + 1] == '\n' &&
+                        headerEndIndex + 3 < read &&
+                        buffer[headerEndIndex + 2] == '\r' &&
+                        buffer[headerEndIndex + 3] == '\n') {
+
+                    headerEndIndex += 4;
+                    break;
+                }
+                headerEndIndex++;
+            }
+        }
+        catch (IOException e){
+
+        }
+
+        return headerEndIndex;
 
     }
 
+    private void printBytes(byte buffer[]){
+        for (int i = 0; i < buffer.length; i++) {
+            System.out.print((char)buffer[i]);
+        }
+    }
     private Map<String, String> getRequestHeaders(BufferedReader br) {
         Map<String, String> headers = new HashMap<>();
         try {
@@ -96,7 +172,6 @@ public class Parser {
         } catch (IOException ex) {
             ex.printStackTrace();
         }
-        System.out.println(headers);
         return headers;
     }
 

@@ -1,5 +1,6 @@
 package app;
 
+import http.HttpSession;
 import util.Parser;
 
 import java.io.IOException;
@@ -22,19 +23,20 @@ public class Connection {
         while (true) {
             Socket session = null;
             try {
-                System.out.println("waiting...");
                 session = socket.accept();
-//                session.setSoTimeout(5000);
-                System.out.println(session.getInetAddress());
-                System.out.println("accpeted...");
+                session.setSoTimeout(5000);
+
             } catch (IOException e) {
                 e.printStackTrace();
             }
             Socket clientSession = session;
             //Continues the while loop
-            new Thread(() -> {
-                Parser.parse(clientSession);
-            }).run();
+            Thread connection = new Thread(() -> {
+                HttpSession httpSession = new HttpSession(clientSession);
+                Parser.parse(httpSession);
+
+            });
+            connection.start();
 
 
         }
