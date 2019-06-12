@@ -15,7 +15,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class Parser {
+public class HttpHandler {
 
 
     private static final String BAD_REQUEST = "400 BAD_REQUEST";
@@ -31,7 +31,7 @@ public class Parser {
     private HttpRequest request;
     private HttpSession httpSession;
 
-    private Parser() {
+    private HttpHandler() {
 
     }
 
@@ -40,8 +40,8 @@ public class Parser {
         return value;
     }
 
-    public static void parse(HttpSession httpSession) {
-        Parser parser = new Parser();
+    public static void handleSession(HttpSession httpSession) {
+        HttpHandler parser = new HttpHandler();
         parser.readRequest(httpSession);
     }
 

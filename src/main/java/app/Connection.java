@@ -1,7 +1,7 @@
 package app;
 
 import model.HttpSession;
-import util.Parser;
+import util.HttpHandler;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -33,7 +33,7 @@ public class Connection {
             //Continues the while loop
             Thread connection = new Thread(() -> {
                 HttpSession httpSession = new HttpSession(clientSession);
-                Parser.parse(httpSession);
+                HttpHandler.handleSession(httpSession);
 
             });
             connection.start();
