@@ -1,6 +1,6 @@
 package servlet;
 
-import http.HttpRequest;
+import model.HttpRequest;
 
 public class Servlet {
 

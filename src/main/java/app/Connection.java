@@ -1,6 +1,6 @@
 package app;
 
-import http.HttpSession;
+import model.HttpSession;
 import util.Parser;
 
 import java.io.IOException;

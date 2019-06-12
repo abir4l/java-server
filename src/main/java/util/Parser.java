@@ -1,12 +1,11 @@
 package util;
 
-import http.HttpRequest;
-import http.HttpSession;
+import model.HttpRequest;
+import model.HttpSession;
 import servlet.Servlet;
 
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.net.URLDecoder;
