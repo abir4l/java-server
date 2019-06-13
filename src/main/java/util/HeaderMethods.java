@@ -141,13 +141,5 @@ public class HeaderMethods {
     public String generateResponse(String code) {
         return String.format("%s %s\r\n", Propertise.HTTP_VERSION, code);
     }
-    public String readFile(File f) throws IOException {
-        String lines = "";
-        String line;
-        BufferedReader br = new BufferedReader(new FileReader(f));
-        while ((line = br.readLine()) != null) {
-            lines += line;
-        }
-        return lines;
-    }
+
 }

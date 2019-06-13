@@ -65,14 +65,12 @@ public class HttpHandler {
 
     }
 
-    private void sendResponse(OutputStream outputStream, String file) {
+    private void sendResponse(OutputStream outputStream, String url) {
 
         OutputStreamWriter osw = new OutputStreamWriter(outputStream);
         PrintWriter bw = new PrintWriter(osw);
-        File f = new File(ROOT_DIR + file);
-
         try {
-            String lines = methods.readFile(f);
+            String lines = FileManager.readFile(url);
             bw.println(methods.generateResponse(OK) + "Connection: close\r\n");
             bw.println(lines);
 
