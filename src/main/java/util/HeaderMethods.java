@@ -43,7 +43,7 @@ public class HeaderMethods {
 
             Map<String, String> params = new HashMap<>();
             if (request.getHttpMethod().equalsIgnoreCase("post")) {
-                if(!request.getHeaders().get("content-type").contains("multipart")) //Server doesn't support multipart-content type as of the moment.
+                if(!request.getHeaders().get("Content-Type").contains("multipart")) //Server doesn't support multipart-content type as of the moment.
                 {
                     br = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(buffer, splitbyte, Propertise.BUFFER_SIZE - splitbyte)));
                     line = "";
