@@ -2,6 +2,7 @@ package app;
 
 import model.HttpSession;
 import util.HttpHandler;
+import util.Propertise;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -21,22 +22,22 @@ public class Connection {
         }
 
         while (true) {
+
             Socket session = null;
             try {
                 session = socket.accept();
                 session.setSoTimeout(5000);
-
             } catch (IOException e) {
                 e.printStackTrace();
             }
             Socket clientSession = session;
             //Continues the while loop
-            Thread connection = new Thread(() -> {
-                HttpSession httpSession = new HttpSession(clientSession);
-                HttpHandler.handleSession(httpSession);
+           Propertise.executor.execute(() -> {
+               HttpSession httpSession = new HttpSession(clientSession);
+               HttpHandler.handleSession(httpSession);
 
-            });
-            connection.start();
+           });
+
 
 
         }

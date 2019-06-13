@@ -18,7 +18,9 @@ public class HeaderMethods {
         InputStream stream = session.getConnection().getInputStream();
         byte buffer[] = new byte[Propertise.BUFFER_SIZE];
         int headerFinalIndex = findHeader(stream,buffer);
-        return parseHeader(buffer,headerFinalIndex);
+        if(headerFinalIndex != 0 )
+            return parseHeader(buffer,headerFinalIndex);
+        return null;
     }
 
     private HttpRequest parseHeader(byte[] buffer,Integer splitbyte) {
@@ -41,16 +43,20 @@ public class HeaderMethods {
 
             Map<String, String> params = new HashMap<>();
             if (request.getHttpMethod().equalsIgnoreCase("post")) {
-                br = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(buffer, splitbyte, Propertise.BUFFER_SIZE - splitbyte)));
-                line = "";
-                while ((line = br.readLine()) != null) {
-                    line = URLDecoder.decode(line,"UTF-8");
-                    String parameters[] = line.split("&");
-                    for (String parameter : parameters) {
-                        String[] param = parameter.split("=");
-                        params.put(param[0],param[1]);
+                if(!request.getHeaders().get("content-type").contains("multipart")) //Server doesn't support multipart-content type as of the moment.
+                {
+                    br = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(buffer, splitbyte, Propertise.BUFFER_SIZE - splitbyte)));
+                    line = "";
+                    while ((line = br.readLine()) != null) {
+                        line = URLDecoder.decode(line,"UTF-8");
+                        String parameters[] = line.split("&");
+                        for (String parameter : parameters) {
+                            String[] param = parameter.split("=");
+                            params.put(param[0],param[1]);
+                        }
                     }
                 }
+
             }
             request.setParams(params);
         } catch (IOException e) {

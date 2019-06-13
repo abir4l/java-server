@@ -34,11 +34,11 @@ public class HttpHandler {
 
         Socket connection = session.getConnection();
         // IO reading thread for non blocking.
-        Thread ioOperation = new Thread(() -> {
+        Propertise.executor.execute(() -> {
             try {
                 request = methods.parseRequest(httpSession);
                 if (request == null){
-                        sendError(connection.getOutputStream());
+                    sendError(connection.getOutputStream());
                 }
                 else{
                     try {
@@ -62,9 +62,6 @@ public class HttpHandler {
             }
 
         });
-
-        ioOperation.start();
-
 
     }
 
