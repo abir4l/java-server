@@ -1,5 +1,6 @@
 package app;
 
+import gui.ServerStatus;
 import model.HttpSession;
 import util.HttpHandler;
 import util.Propertise;
@@ -26,7 +27,8 @@ public class Connection {
             Socket session = null;
             try {
                 session = socket.accept();
-                session.setSoTimeout(5000);
+
+//                session.setSoTimeout(5000);
             } catch (IOException e) {
                 e.printStackTrace();
             }
