@@ -1,21 +1,17 @@
 import app.Connection;
-import gui.ServerStatus;
+import util.Propertise;
 
 public class Server {
 
-    public final static ServerStatus APPLICATION_STATE = ServerStatus.getInstance();
 
     public static void main(String[] args) {
 
-        new Thread(){
-            @Override
-            public void run() {
-                APPLICATION_STATE.startApplication();
-            }
-        }.run();
-
-        Connection server = new Connection();
-        server.connectionInit();
+        Connection.APPLICATION_STATE.startApplication();
+        Propertise.executor.execute(()->{
+            Connection server = new Connection();
+            server.connectionInit();
+            server.listenForConnection();
+        });
 
     }
 

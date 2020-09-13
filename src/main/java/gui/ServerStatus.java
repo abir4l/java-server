@@ -13,21 +13,33 @@ public class ServerStatus extends JFrame {
 
     private int connections;
     private JLabel connectionLabel;
+    private JTextArea textArea;
+
+
+    private JLabel welcomeText;
 
     private ServerStatus() throws HeadlessException {
 
         super("Server Status");
+
         connectionLabel = new JLabel(getConnectionValue());
-        this.add(connectionLabel);
+        welcomeText = new JLabel("Welcome text");
+        textArea = new JTextArea();
+        textArea.setEditable(false);
+        var panel = new JPanel();
+        panel.setLayout(new BorderLayout());
+        panel.add(textArea,BorderLayout.CENTER);
+        panel.add(welcomeText,BorderLayout.NORTH);
+        panel.add(connectionLabel,BorderLayout.SOUTH);
+        this.add(panel);
+        this.pack();
 
 
     }
 
-
     public void startApplication(){
-
         setLocationRelativeTo(null);
-        setSize(500,500);
+        setSize(250,150);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setVisible(true);
     }
@@ -42,6 +54,9 @@ public class ServerStatus extends JFrame {
     }
 
 
+    public void showWelcomeText(){
+        this.welcomeText.setText("Server running on port 4000");
+    }
 
     public void updateConnection(){
         connections ++;
@@ -49,7 +64,9 @@ public class ServerStatus extends JFrame {
     }
 
 
-
-
+    public void logger(String log){
+        String data = textArea.getText();
+        textArea.setText(data + "\n"+ log);
+    }
 
 }
