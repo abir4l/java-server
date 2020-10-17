@@ -45,6 +45,7 @@ public class HttpHandler {
                 request = parser.parseRequest(httpSession);
 
                 if (request == null){
+                    this.responseProcessor = new ResponseProcessor(null);
                     responseProcessor.sendError(connection.getOutputStream());
                 }
                 else{
@@ -57,7 +58,7 @@ public class HttpHandler {
                         else if(request.getRequestType().get().equals(RequestType.DIR))
                             action = new DirectoryAction();
                     }else{
-                        this.responseProcessor = new ResponseProcessor(null); // because no action available for no resource
+                        this.responseProcessor = new ResponseProcessor(null);// because no action available for no resource
                         this.responseProcessor.sendError(connection.getOutputStream());
                         return;
                     }

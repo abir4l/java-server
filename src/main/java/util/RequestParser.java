@@ -19,6 +19,7 @@ public class RequestParser {
         int headerFinalIndex = findHeader(stream, buffer);
         if (headerFinalIndex != 0)
             return parseRequest(buffer, headerFinalIndex);
+        printBytes(buffer);
         return null;
     }
 
@@ -121,6 +122,7 @@ public class RequestParser {
     }
 
     private void printBytes(byte buffer[]) {
+        char arr[] = new char[buffer.length];
         for (int i = 0; i < buffer.length; i++) {
             System.out.print((char) buffer[i]);
         }
