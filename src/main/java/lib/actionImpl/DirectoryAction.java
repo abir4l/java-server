@@ -19,7 +19,9 @@ public class DirectoryAction implements Action {
         StringBuilder lines = new StringBuilder();
         File[] files = file.listFiles();
         assert files != null;
-        lines.append("<!DOCTYPE html><html lang=\"en\"><body><ul>");
+        lines.append("<!DOCTYPE html><html lang=\"en\"><body>");
+        lines.append("<ul>");
+
         for (File f : files) {
             lines.append("<li>")
                     .append(f.getName())
