@@ -36,21 +36,7 @@ public class FileAction implements Action {
             while ((line = br.readLine()) != null) {
                 lines.append(line);
             }
-        } else if (file.isDirectory()) {
-            File files[] = file.listFiles();
-            assert files != null;
-            lines.append("<!DOCTYPE html><html lang=\"en\"><body><ul>");
-            for (File f : files) {
-                lines.append("<li>")
-                        .append(f.getName())
-                        .append("<br/>")
-                        .append("</li>");
-            }
-            lines.append("</ul></body></html");
-        } else {
-            lines.append("Implement directory listing or 404 error");
         }
-
         return lines.toString();
     }
 }
