@@ -1,5 +1,6 @@
 package util;
 
+import app.HttpResponse;
 import lib.actionImpl.DirectoryAction;
 import lib.actionImpl.FileAction;
 import lib.actions.Action;
@@ -45,6 +46,7 @@ public class HttpHandler {
                 request = parser.parseRequest(httpSession);
 
                 if (request == null){
+                    //handle empty request here
                     this.responseProcessor = new ResponseProcessor(null);
                     responseProcessor.sendError(connection.getOutputStream());
                 }
@@ -52,18 +54,21 @@ public class HttpHandler {
                     //based on the request we configure response here
                     Action action = null;
 
-                    if(request.getRequestType().isPresent()){
-                        if(request.getRequestType().get().equals(RequestType.FILE) || request.getRequestType().get().equals(RequestType.WEBPAGE))
-                            action = new FileAction();
-                        else if(request.getRequestType().get().equals(RequestType.DIR))
-                            action = new DirectoryAction();
-                    }else{
-                        this.responseProcessor = new ResponseProcessor(null);// because no action available for no resource
-                        this.responseProcessor.sendError(connection.getOutputStream());
-                        return;
-                    }
-                    this.responseProcessor = new ResponseProcessor(action);
-                    this.responseProcessor.sendResponse(connection.getOutputStream(), request.getRequestPath());
+                    HttpResponse response = serveResponse(request);
+                    this.responseProcessor.sendResponse(response);
+
+//                    if(request.getRequestType().isPresent()){
+//                        if(request.getRequestType().get().equals(RequestType.FILE) || request.getRequestType().get().equals(RequestType.WEBPAGE))
+//                            action = new FileAction();
+//                        else if(request.getRequestType().get().equals(RequestType.DIR))
+//                            action = new DirectoryAction();
+//                    }else{
+//                        this.responseProcessor = new ResponseProcessor(null);// because no action available for no resource
+//                        this.responseProcessor.sendError(connection.getOutputStream());
+//                        return;
+//                    }
+//                    this.responseProcessor = new ResponseProcessor(action);
+//                    this.responseProcessor.sendResponse(connection.getOutputStream(), request.getRequestPath());
                 }
             } catch (SocketTimeoutException ste) {
                 System.err.println("Timed out...");
@@ -72,6 +77,17 @@ public class HttpHandler {
             }
 
         });
+
+    }
+
+    private HttpResponse serveResponse(HttpRequest request) {
+
+        // process directory
+        // process file
+        // process if it's file or directory
+        // text content or binary data
+
+        return null;
 
     }
 

@@ -1,5 +1,6 @@
 package util;
 
+import app.HttpResponse;
 import lib.actions.Action;
 
 import java.io.*;
@@ -52,4 +53,6 @@ public class ResponseProcessor {
         return String.format("%s %s\r\n", Propertise.HTTP_VERSION, code);
     }
 
+    public void sendResponse(HttpResponse response) {
+    }
 }
