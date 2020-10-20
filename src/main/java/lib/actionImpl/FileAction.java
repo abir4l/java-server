@@ -1,6 +1,8 @@
 package lib.actionImpl;
 
+import app.HttpResponse;
 import lib.actions.Action;
+import model.HttpRequest;
 import util.Propertise;
 
 import java.io.*;
@@ -17,26 +19,41 @@ public class FileAction implements Action {
     }
 
     @Override
-    public String dispatchAction(String url) throws IOException {
+    public HttpResponse dispatchAction(HttpRequest request) throws IOException {
         // verification for if the files should be downloaded or rendered
-        if (url.equalsIgnoreCase("/"))
+        String url= request.getRequestPath();
+        if (request.getRequestPath().equalsIgnoreCase("/"))
             url = "/index.html";
         return procesUrl(url);
 
     }
 
     @Override
-    public String procesUrl(String url) throws IOException {
+    public HttpResponse procesUrl(String url) throws IOException {
 
+        int dot = url.lastIndexOf('.');
+        String mime = "";
+        if (dot >= 0) {
+            mime = (String) Propertise.mimeType.get(url.substring(dot + 1).toLowerCase());
+        }
+        if (mime == null)
+            mime = Propertise.MIME_DEFAULT_BINARY;
+
+        HttpResponse response = new HttpResponse(mime);
         File file = new File(Propertise.WEB + url);
         StringBuilder lines = new StringBuilder();
         String line;
         if (file.exists() && !file.isDirectory()) {
-            BufferedReader br = new BufferedReader(new FileReader(file));
-            while ((line = br.readLine()) != null) {
-                lines.append(line);
-            }
+            long startFrom = 0;
+            FileInputStream fis = new FileInputStream(file);
+            fis.skip(startFrom);
+            response.addHeader("Content-length", "" + (file.length() - startFrom));
+            response.addHeader("Content-range", "" + startFrom + "-" +
+                    (file.length() - 1) + "/" + file.length());
+            response.setData(fis);
+            return response;
         }
-        return lines.toString();
+        return response;
     }
+
 }

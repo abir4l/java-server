@@ -11,6 +11,7 @@ import model.HttpSession;
 import java.io.*;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
+import java.util.Optional;
 
 public class HttpHandler {
 
@@ -23,10 +24,12 @@ public class HttpHandler {
     private HttpSession httpSession;
 
     private HttpHandler( RequestParser parser) {
+        this();
         this.parser = parser;
     }
 
     private HttpHandler(){
+        this.responseProcessor = new ResponseProcessor();
 
     }
     public static void handleSession(HttpSession httpSession) {
@@ -47,29 +50,21 @@ public class HttpHandler {
 
                 if (request == null){
                     //handle empty request here
-                    this.responseProcessor = new ResponseProcessor(null);
                     responseProcessor.sendError(connection.getOutputStream());
                 }
                 else{
                     //based on the request we configure response here
-                    Action action = null;
+                    Optional<Action> action = responseProcessor.getAction(request);
+                    if(action.isPresent()){
+                        HttpResponse response = serveResponse(request,action.orElseGet(() -> null));
+                        assert response != null;
+                        response.setStatus("200 OK");
+                        this.responseProcessor.sendResponse(response,session.getOutputStream());
+                    }else{
+                        this.responseProcessor.sendError(session.getOutputStream());
+                    }
 
-                    HttpResponse response = serveResponse(request);
-                    this.responseProcessor.sendResponse(response);
-
-//                    if(request.getRequestType().isPresent()){
-//                        if(request.getRequestType().get().equals(RequestType.FILE) || request.getRequestType().get().equals(RequestType.WEBPAGE))
-//                            action = new FileAction();
-//                        else if(request.getRequestType().get().equals(RequestType.DIR))
-//                            action = new DirectoryAction();
-//                    }else{
-//                        this.responseProcessor = new ResponseProcessor(null);// because no action available for no resource
-//                        this.responseProcessor.sendError(connection.getOutputStream());
-//                        return;
-//                    }
-//                    this.responseProcessor = new ResponseProcessor(action);
-//                    this.responseProcessor.sendResponse(connection.getOutputStream(), request.getRequestPath());
-                }
+}
             } catch (SocketTimeoutException ste) {
                 System.err.println("Timed out...");
             } catch (IOException ioe) {
@@ -80,13 +75,15 @@ public class HttpHandler {
 
     }
 
-    private HttpResponse serveResponse(HttpRequest request) {
+    private HttpResponse serveResponse(HttpRequest request, Action action) {
 
         // process directory
-        // process file
-        // process if it's file or directory
-        // text content or binary data
 
+        try {
+            return action.dispatchAction(request);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         return null;
 
     }

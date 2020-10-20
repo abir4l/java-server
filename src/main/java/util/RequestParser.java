@@ -19,7 +19,7 @@ public class RequestParser {
         int headerFinalIndex = findHeader(stream, buffer);
         if (headerFinalIndex != 0)
             return parseRequest(buffer, headerFinalIndex);
-        printBytes(buffer);
+//        printBytes(buffer);
         return null;
     }
 
@@ -155,13 +155,11 @@ public class RequestParser {
         try {
             read = stream.read(buffer, 0, Propertise.BUFFER_SIZE);
             while (headerEndIndex + 1 < read) {
-
                 if (buffer[headerEndIndex] == '\n' &&
                         buffer[headerEndIndex + 1] == '\n') {
                     headerEndIndex += 2;
                     break;
                 }
-
                 if (buffer[headerEndIndex] == '\r' &&
                         buffer[headerEndIndex + 1] == '\n' &&
                         headerEndIndex + 3 < read &&
@@ -173,8 +171,7 @@ public class RequestParser {
                 }
                 headerEndIndex++;
             }
-        } catch (IOException e) {
-
+        } catch (IOException ignored) {
         }
 
         return headerEndIndex;

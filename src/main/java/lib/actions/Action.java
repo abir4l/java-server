@@ -1,5 +1,8 @@
 package lib.actions;
 
+import app.HttpResponse;
+import model.HttpRequest;
+
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 
@@ -11,6 +14,6 @@ import java.io.OutputStreamWriter;
 
 public interface Action {
 //    public void dispatchAction(OutputStreamWriter streamWriter);
-    String procesUrl(String url) throws IOException;
-    String dispatchAction(String url) throws IOException;
+    HttpResponse procesUrl(String url) throws IOException;
+    HttpResponse dispatchAction(HttpRequest request) throws IOException;
 }

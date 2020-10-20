@@ -10,7 +10,6 @@ public class Server {
             Connection.APPLICATION_STATE.startApplication(server);
             server.connectionInit();
             server.listenForConnection();
-
         });
 
     }
